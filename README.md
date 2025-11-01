@@ -1,4 +1,4 @@
-# Plataforma de Gestión de Taller Automotriz
+# Plataforma de Gestión de Taller Automotriz bylmfr
 
 Este repositorio contiene una plataforma integral para la gestión de talleres automotrices con soporte multi-sucursal, portal de clientes con experiencia 3D, módulos de inventario, facturación compatible con SAR Honduras y herramientas administrativas.
 
