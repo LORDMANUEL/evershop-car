@@ -1,0 +1,202 @@
+{
+  "meta": {
+    "version": 1,
+    "createdAt": "2025-11-02T02:11:51.197Z"
+  },
+  "branches": [
+    {
+      "id": "branch-sanpedro",
+      "code": "SPS",
+      "name": "Sucursal San Pedro",
+      "address": "Blvd. del Sur, San Pedro Sula",
+      "phone": "+504-555-0101"
+    },
+    {
+      "id": "branch-tegucigalpa",
+      "code": "TGU",
+      "name": "Sucursal Tegucigalpa",
+      "address": "Col. Palmira, Tegucigalpa",
+      "phone": "+504-555-0202"
+    }
+  ],
+  "users": [
+    {
+      "id": "user-admin",
+      "email": "admin@taller.local",
+      "role": "SUPER_ADMIN",
+      "passwordSalt": "8554f266af58c209bac5e5193e6ed7a3",
+      "passwordHash": "205d56167e631b589d0e1dcccde89dbc4901e3fd4ef48c74865982fd4bcaaa73926408b0a2245f59c18aa2417e3bb0bda0e7898b16936793052fdf4323dd1cd3",
+      "firstName": "Admin",
+      "lastName": "General",
+      "branchId": null,
+      "phone": "+504-555-0000",
+      "createdAt": "2025-11-02T02:11:51.434Z"
+    },
+    {
+      "id": "user-sanpedro-manager",
+      "email": "sps.manager@taller.local",
+      "role": "BRANCH_MANAGER",
+      "passwordSalt": "b3b012f1b775d8b6b3ea4733c5c52db3",
+      "passwordHash": "fe83781143a00211fd040d4c8b30adc0c3a67d967d8e2e7375503cc02b8a6ca7fb44e79854c0f878b88f3386c13e57cfc8f58788c6e099311e1f42638d4b4fee",
+      "firstName": "Carla",
+      "lastName": "Hernández",
+      "branchId": "branch-sanpedro",
+      "phone": "+504-555-1010",
+      "createdAt": "2025-11-02T02:11:51.434Z"
+    }
+  ],
+  "sessions": [
+    {
+      "id": "session-1762049511586",
+      "userId": "user-admin",
+      "token": "eyJzdWIiOiJ1c2VyLWFkbWluIiwicm9sZSI6IlNVUEVSX0FETUlOIiwiYnJhbmNoSWQiOm51bGwsImlhdCI6MTc2MjA0OTUxMTU4NCwiZXhwIjoxNzYyMDUzMTExNTg0fQ.db0f773fade2d373da3935986f615a54515d5e2080d73dce998769c242876a43",
+      "createdAt": "2025-11-02T02:11:51.586Z",
+      "expiresAt": "2025-11-02T03:11:51.586Z"
+    }
+  ],
+  "inventoryItems": [
+    {
+      "id": "item-aceite-5w30",
+      "sku": "OIL-5W30",
+      "name": "Aceite Sintético 5W30",
+      "brand": "Total",
+      "compatibleModels": [
+        "VIN-COROLLA-2018",
+        "VIN-CIVIC-2019"
+      ],
+      "cost": 250,
+      "price": 425,
+      "unit": "LTS",
+      "minStock": 10,
+      "createdAt": "2025-11-02T02:11:51.434Z"
+    },
+    {
+      "id": "item-filtro-aire",
+      "sku": "FLT-AIRE",
+      "name": "Filtro de Aire Universal",
+      "brand": "Bosch",
+      "compatibleModels": [
+        "VIN-COROLLA-2018",
+        "VIN-HILUX-2020"
+      ],
+      "cost": 180,
+      "price": 320,
+      "unit": "UND",
+      "minStock": 8,
+      "createdAt": "2025-11-02T02:11:51.434Z"
+    }
+  ],
+  "inventoryStocks": [
+    {
+      "id": "5fc4b0cd-abea-4a40-87de-498a48580f86",
+      "itemId": "item-aceite-5w30",
+      "branchId": "branch-sanpedro",
+      "quantity": 30
+    },
+    {
+      "id": "87067d4e-a30f-4718-9b22-6137e307a0d8",
+      "itemId": "item-aceite-5w30",
+      "branchId": "branch-tegucigalpa",
+      "quantity": 27
+    },
+    {
+      "id": "835cc2ae-7b6d-4024-8eca-51faee284706",
+      "itemId": "item-filtro-aire",
+      "branchId": "branch-sanpedro",
+      "quantity": 18
+    },
+    {
+      "id": "15f68051-7610-4394-a390-4dc9e53c9c44",
+      "itemId": "item-filtro-aire",
+      "branchId": "branch-tegucigalpa",
+      "quantity": 11
+    }
+  ],
+  "inventoryTransfers": [
+    {
+      "id": "transfer-5168f9c5-42a0-48bf-b6d2-2b5c62da56dd",
+      "itemId": "item-aceite-5w30",
+      "quantity": 5,
+      "fromBranchId": "branch-sanpedro",
+      "toBranchId": "branch-tegucigalpa",
+      "requestedBy": "user-sanpedro-manager",
+      "approvedBy": "user-sanpedro-manager",
+      "receivedBy": "user-sanpedro-manager",
+      "status": "COMPLETED",
+      "note": null,
+      "timeline": []
+    }
+  ],
+  "inventoryAudits": [],
+  "inventoryAuditRecords": [],
+  "fiscalSeries": [
+    {
+      "id": "serie-sps-2025",
+      "branchId": "branch-sanpedro",
+      "cai": "A1B2C3-SPS-2025",
+      "prefix": "000-001-01",
+      "startNumber": 1,
+      "endNumber": 500,
+      "nextNumber": 2,
+      "expiresAt": "2026-01-31",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "serie-tgu-2025",
+      "branchId": "branch-tegucigalpa",
+      "cai": "A1B2C3-TGU-2025",
+      "prefix": "000-002-01",
+      "startNumber": 1,
+      "endNumber": 500,
+      "nextNumber": 1,
+      "expiresAt": "2026-01-31",
+      "status": "ACTIVE"
+    }
+  ],
+  "invoices": [
+    {
+      "id": "invoice-5e3a30d2-ece4-4c1d-a5c8-b0d36d775cd5",
+      "branchId": "branch-sanpedro",
+      "serieId": "serie-sps-2025",
+      "number": "000-001-01-00000001",
+      "cai": "A1B2C3-SPS-2025",
+      "issuedAt": "2025-11-02T02:11:51.612Z",
+      "customer": {
+        "name": "Cliente QA",
+        "taxId": null,
+        "email": null
+      },
+      "subtotal": 1000,
+      "tax": 150,
+      "total": 1150,
+      "currency": "HNL",
+      "lines": [
+        {
+          "id": "invoice-line-7c6d68f6-51f8-4875-b8ba-341e783c33ed",
+          "description": "Servicio de prueba",
+          "quantity": 1,
+          "unitPrice": 1000,
+          "taxRate": 0.15
+        }
+      ],
+      "workOrderId": null,
+      "status": "EMITTED"
+    }
+  ],
+  "creditNotes": [],
+  "reconciliations": [],
+  "workOrders": [],
+  "accountingEntries": [
+    {
+      "id": "entry-e68a45a6-b8c2-4666-81bf-35e547942f4c",
+      "source": "INVOICE",
+      "sourceId": "invoice-5e3a30d2-ece4-4c1d-a5c8-b0d36d775cd5",
+      "createdAt": "2025-11-02T02:11:51.612Z",
+      "debit": 1150,
+      "credit": 1000,
+      "tax": 150,
+      "branchId": "branch-sanpedro"
+    }
+  ],
+  "qaIncidents": []
+}
