@@ -8,16 +8,17 @@ Este repositorio alberga una plataforma integral para la gestión de talleres au
 
 1. [Visión general](#visión-general)
 2. [Vista previa del dashboard](#vista-previa-del-dashboard)
-3. [Estado actual del proyecto](#estado-actual-del-proyecto)
-4. [Roadmap por fases](#roadmap-por-fases)
-5. [Estructura del repositorio](#estructura-del-repositorio)
-6. [Requisitos](#requisitos)
-7. [Instalación rápida en Ubuntu](#instalación-rápida-en-ubuntu)
-8. [Variables de entorno](#variables-de-entorno)
-9. [Ejecución en desarrollo](#ejecución-en-desarrollo)
-10. [Pruebas](#pruebas)
-11. [Despliegue](#despliegue)
-12. [Documentación complementaria](#documentación-complementaria)
+3. [Vista previa del Garage 3D](#vista-previa-del-garage-3d)
+4. [Estado actual del proyecto](#estado-actual-del-proyecto)
+5. [Roadmap por fases](#roadmap-por-fases)
+6. [Estructura del repositorio](#estructura-del-repositorio)
+7. [Requisitos](#requisitos)
+8. [Instalación rápida en Ubuntu](#instalación-rápida-en-ubuntu)
+9. [Variables de entorno](#variables-de-entorno)
+10. [Ejecución en desarrollo](#ejecución-en-desarrollo)
+11. [Pruebas](#pruebas)
+12. [Despliegue](#despliegue)
+13. [Documentación complementaria](#documentación-complementaria)
 
 ## Visión general
 
@@ -30,6 +31,12 @@ Este repositorio alberga una plataforma integral para la gestión de talleres au
 > Captura conceptual del panel administrativo que ilustra los indicadores clave y el roadmap activo de la plataforma.
 
 ![Panel administrativo con indicadores diarios](docs/assets/dashboard-preview.svg)
+
+## Vista previa del Garage 3D
+
+> Mockup del portal de clientes resaltando la navegación 3D, hotspots interactivos y catálogo filtrado por VIN.
+
+![Portal Garage 3D con hotspots](docs/assets/garage-preview.svg)
 
 ## Estado actual del proyecto
 
@@ -62,27 +69,84 @@ El proyecto cuenta con un prototipo funcional estable que cubre los cimientos te
 
 #### Fase 3 · Profundización funcional
 
-- **Backlog prioritario**: conciliaciones contables automáticas, transferencias multi-sucursal con doble validación, auditoría de inventario con bitácora completa y reglas SAR avanzadas (CAI, series por sucursal y notas de crédito).
-- **Dependencias**: definición de catálogos fiscales definitivos, políticas de autorización por rol para ajustes de inventario y confirmación de flujos multi-sucursal desde operaciones.
-- **Entregables de control**: diagramas BPMN de órdenes de servicio, pruebas de estrés sobre movimientos de inventario y reportes financieros trimestrales.
+**Backlog prioritario**
+
+- Conciliaciones contables automáticas que cuadren inventario, facturación y contabilidad con asientos generados por transacción.
+- Transferencias multi-sucursal con doble validación (origen/destino) y control de autorizaciones.
+- Auditoría de inventario con bitácora completa de movimientos, firmas digitales y bloqueos ante discrepancias.
+- Reglas SAR avanzadas: administración de CAI, series por sucursal, notas de crédito y alertas por vencimiento.
+
+**Dependencias clave**
+
+- Definición final de catálogos fiscales (impuestos, exoneraciones, tipos de documento) provistos por contabilidad.
+- Políticas de autorización por rol para ajustes de inventario y aprobación de transferencias.
+- Confirmación operativa de flujos multi-sucursal y tiempos de tránsito entre bodegas.
+
+**Entregables de control**
+
+- Diagramas BPMN completos de órdenes de servicio y rutas de aprobación.
+- Pruebas de estrés sobre movimientos de inventario (picos de 500 transacciones/minuto).
+- Reportes financieros trimestrales con conciliación automática y anexos SAR.
 
 #### Fase 4 · Calidad y pruebas
 
-- **Backlog prioritario**: ampliar suite Jest (API) y Playwright (frontend) cubriendo flujos críticos, generar seeds deterministas por entorno y configurar cobertura mínima del 80% para módulos core.
-- **Automatización**: pipeline CI con lint + test + build, jobs nocturnos de verificación de seeds y alertas Slack/Email para fallos.
-- **Observabilidad**: instrumentar logs estructurados, métricas básicas (tiempo de respuesta API, errores por módulo) y tablero de salud en el dashboard administrativo.
+**Backlog prioritario**
+
+- Ampliar la suite Jest (API) y Playwright (frontend) cubriendo flujos críticos end-to-end.
+- Generar seeds deterministas por entorno (dev, staging, demo) y restauración rápida.
+- Configurar cobertura mínima del 80% para módulos core (inventario, órdenes, facturación, usuarios).
+
+**Automatización y CI/CD**
+
+- Pipeline CI con etapas lint → test → build → empaquetado artefactos.
+- Jobs nocturnos que validen seeds y ejecuten smoke tests sobre entorno staging.
+- Alertas via Slack/Email ante fallos de pipeline o degradación de cobertura.
+
+**Observabilidad**
+
+- Instrumentar logs estructurados (JSON) con trazabilidad por solicitud.
+- Métricas básicas: latencia de API, tasa de errores por módulo, uso de CPU/RAM.
+- Tablero de salud en el dashboard administrativo con indicadores en tiempo casi real.
 
 #### Fase 5 · Experiencia de usuario
 
-- **Backlog prioritario**: refinar estados de carga y vacíos, asistentes in-app para técnicos y cajeros, y mejoras de accesibilidad (WCAG AA) incluyendo traducción/localización.
-- **Garage 3D**: optimizar carga de modelos Babylon.js, soporte para hotspots interactivos y catálogo filtrado por VIN.
-- **Contenido educativo**: biblioteca de tutoriales paso a paso y guías contextualizadas según rol.
+**Backlog prioritario**
+
+- Refinar estados vacíos, loaders progresivos y validaciones accesibles.
+- Asistentes in-app para técnicos y cajeros que guíen paso a paso los flujos críticos.
+- Mejoras de accesibilidad WCAG AA, incluyendo alto contraste, navegación por teclado y traducciones.
+
+**Garage 3D**
+
+- Optimizar carga de modelos Babylon.js con técnicas de lazy loading y compresión.
+- Hotspots interactivos con tooltips y llamadas a la acción (comprar, reservar, solicitar servicio).
+- Catálogo filtrado por VIN con sugerencias proactivas y comparativas de repuestos.
+
+**Contenido educativo**
+
+- Biblioteca multimedia con tutoriales paso a paso segmentados por rol.
+- Guías contextualizadas dentro de la aplicación (tooltips, walkthroughs).
+- Centro de ayuda con FAQs y documentación descargable.
 
 #### Fase 6 · Preparación para producción
 
-- **Backlog prioritario**: endurecimiento de seguridad (CSP, rotación de llaves, hardening de servidor), políticas de respaldo/restore verificadas y plan de contingencia multi-región.
-- **Operación 24/7**: monitoreo activo, runbooks para incidentes, escalamiento definido y pruebas de recuperación de desastres.
-- **Documentación final**: checklist de lanzamiento, acuerdos de nivel de servicio (SLA) y manuales operativos para cada área del taller.
+**Backlog prioritario**
+
+- Endurecimiento de seguridad: CSP estricta, rotación periódica de llaves, hardening del servidor y escaneo de vulnerabilidades.
+- Políticas de respaldo/restore verificadas (ensayos mensuales) y plan de contingencia multi-región.
+- Gestión de secretos centralizada y rotación automatizada.
+
+**Operación 24/7**
+
+- Monitoreo activo (uptime, rendimiento, integridad de jobs) con alertas multi-canal.
+- Runbooks para incidentes y escalamiento definido por criticidad.
+- Pruebas de recuperación ante desastres (DRP) con objetivos RTO/RPO establecidos.
+
+**Documentación final**
+
+- Checklist de lanzamiento y de regresión previa a cada despliegue.
+- Acuerdos de nivel de servicio (SLA/SLO) por módulo y rol responsable.
+- Manuales operativos para cada área del taller y plan de capacitación.
 
 ### Próximos pasos inmediatos
 
