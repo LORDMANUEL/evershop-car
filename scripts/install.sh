@@ -3,65 +3,25 @@ set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BACKEND_DIR="$PROJECT_ROOT/backend"
-FRONTEND_DIR="$PROJECT_ROOT/frontend"
+DB_FILE="$BACKEND_DIR/data/database.json"
 
-if ! command -v psql >/dev/null 2>&1; then
-  echo "Instalando PostgreSQL..."
-  sudo apt-get update && sudo apt-get install -y postgresql
-fi
-
-if ! id -u postgres >/dev/null 2>&1; then
-  echo "El usuario postgres no existe. Verifique la instalación de PostgreSQL." >&2
+if ! command -v node >/dev/null 2>&1; then
+  echo "[ERROR] Node.js 18+ es requerido" >&2
   exit 1
 fi
 
-DB_NAME="tallerdb"
-DB_USER="talleruser"
-DB_PASSWORD="tallerpass"
+mkdir -p "$(dirname "$DB_FILE")"
+if [ ! -f "$DB_FILE" ]; then
+  echo "Creando base de datos inicial..."
+  (cd "$BACKEND_DIR" && node - <<'NODE'
+import { resetDatabase } from './src/lib/db.js';
+await resetDatabase();
+console.log('Base de datos inicial generada');
+NODE
+  )
+fi
 
-sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname = '$DB_USER'" | grep -q 1 || sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
-sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'" | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
-
-cd "$BACKEND_DIR"
-cp -n .env.example .env || true
-sed -i "s|postgresql://talleruser:password@localhost:5432/tallerdb|postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME|" .env
-
-npm_install() {
-  local component="$1"
-  local registry="${NPM_REGISTRY:-}"
-  local registry_args=()
-
-  if [ -n "$registry" ]; then
-    registry_args+=("--registry" "$registry")
-  fi
-
-  if ! npm install "${registry_args[@]}"; then
-    cat <<EOF >&2
-[ERROR] No fue posible instalar dependencias para "${component}".
-Si el error corresponde a un código HTTP 403, revise:
-  • Que cuente con acceso a https://registry.npmjs.org.
-  • Si su organización usa un registro privado, defina la variable
-    de entorno NPM_REGISTRY con la URL correspondiente.
-  • En casos con autenticación obligatoria, configure su token ejecutando
-    "npm config set //<host>/:_authToken <token>" antes de relanzar.
-
-Ejemplo:
-  NPM_REGISTRY=https://registry.npmjs.org ./scripts/install.sh
-
-También puede ejecutar manualmente:
-  (cd "${component}" && npm install --registry "${registry:-https://registry.npmjs.org}")
-EOF
-    exit 1
-  fi
-}
-
-npm_install "backend"
-npx prisma generate
-npx prisma db push
-npm run seed || true
-
-cd "$FRONTEND_DIR"
-npm_install "frontend"
-npm run build
-
-echo "Instalación completada. Ejecute 'cd backend && npm run dev' para iniciar la API y 'cd frontend && npm run dev' para la SPA."
+echo "Instalación completada."
+echo "Ejecute:"
+echo "  cd backend && node src/server.js"
+echo "  node backend/src/tests/run-tests.js"

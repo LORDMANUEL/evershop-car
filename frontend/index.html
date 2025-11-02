@@ -1,12 +1,51 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Plataforma Taller Automotriz</title>
+    <link rel="stylesheet" href="assets/style.css" />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <header class="hero">
+      <div class="container">
+        <h1>Panel Operativo del Taller</h1>
+        <p class="subtitle">Fases 3–6 planificadas, inventario multi-sucursal activo y facturación SAR lista.</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="card">
+        <h2>Estado de la API</h2>
+        <div id="api-status" class="status">Consultando...</div>
+        <button id="refresh-health">Actualizar estado</button>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <h3>Inventario</h3>
+          <p>Movimientos recientes y auditorías activas.</p>
+          <ul id="inventory-list" class="list"></ul>
+        </article>
+        <article class="card">
+          <h3>Facturación SAR</h3>
+          <p>Series fiscales activas y correlativos disponibles.</p>
+          <ul id="billing-list" class="list"></ul>
+        </article>
+        <article class="card">
+          <h3>Conciliaciones</h3>
+          <p>Resumen contable por sucursal.</p>
+          <ul id="accounting-list" class="list"></ul>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <small>Blueprint Taller Automotriz · Fase 3 completada · Preparando Fase 4</small>
+      </div>
+    </footer>
+
+    <script src="assets/app.js" type="module"></script>
   </body>
 </html>
