@@ -1,0 +1,440 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  BRANCH_MANAGER
+  TECHNICIAN
+  INVENTORY_MANAGER
+  ACCOUNTANT
+  CASHIER
+  MARKETING
+  CUSTOMER
+}
+
+enum WorkOrderStatus {
+  RECEIVED
+  DIAGNOSIS
+  QUOTED
+  WAITING_APPROVAL
+  APPROVED
+  IN_PROGRESS
+  READY_FOR_BILLING
+  COMPLETED
+  CANCELLED
+}
+
+enum InventoryMovementType {
+  PURCHASE
+  SALE
+  SERVICE_USAGE
+  ADJUSTMENT
+  TRANSFER_IN
+  TRANSFER_OUT
+  RETURN
+}
+
+enum InvoiceType {
+  SERVICE
+  PRODUCT
+  MIXED
+}
+
+enum CampaignChannel {
+  IN_APP
+  EMAIL
+}
+
+enum AccountingEntryType {
+  DEBIT
+  CREDIT
+}
+
+model Branch {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  address     String
+  phone       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
+  stocks      InventoryStock[]
+  workOrders  WorkOrder[]
+  invoices    Invoice[]
+  purchases   PurchaseOrder[]
+}
+
+model User {
+  id             String        @id @default(cuid())
+  email          String        @unique
+  password       String
+  firstName      String
+  lastName       String
+  role           Role
+  phone          String?
+  isActive       Boolean       @default(true)
+  branchId       String?
+  branch         Branch?       @relation(fields: [branchId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  customer       CustomerProfile?
+  refreshTokens  RefreshToken[]
+  auditLogs      AuditLog[]
+  workOrders     WorkOrder[]   @relation("UserWorkOrders")
+  assignedOrders WorkOrder[]   @relation("AssignedTechnicians")
+  notifications  Notification[]
+}
+
+model CustomerProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  document  String?
+  address   String?
+  city      String?
+  country   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  vehicles  Vehicle[]
+  invoices  Invoice[]
+}
+
+model Vehicle {
+  id         String          @id @default(cuid())
+  vin        String          @unique
+  make       String
+  model      String
+  year       Int?
+  engine     String?
+  color      String?
+  mileage    Int?            @default(0)
+  customerId String
+  customer   CustomerProfile @relation(fields: [customerId], references: [id])
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  workOrders WorkOrder[]
+}
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  email     String?
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  products  InventoryProduct[]
+  purchases PurchaseOrder[]
+}
+
+model InventoryProduct {
+  id             String            @id @default(cuid())
+  sku            String            @unique
+  name           String
+  description    String?
+  brand          String?
+  compatibleWith String[]
+  cost           Decimal           @db.Numeric(12, 2)
+  price          Decimal           @db.Numeric(12, 2)
+  minStock       Int               @default(0)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  supplierId     String?
+  supplier       Supplier?         @relation(fields: [supplierId], references: [id])
+  stocks         InventoryStock[]
+  movements      InventoryMovement[]
+  invoiceLines   InvoiceLine[]
+  purchaseLines  PurchaseLine[]
+  workOrderParts WorkOrderPart[]
+}
+
+model InventoryStock {
+  id        String           @id @default(cuid())
+  productId String
+  branchId  String
+  quantity  Int              @default(0)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  product   InventoryProduct @relation(fields: [productId], references: [id])
+  branch    Branch           @relation(fields: [branchId], references: [id])
+
+  @@unique([productId, branchId])
+}
+
+model InventoryMovement {
+  id        String                 @id @default(cuid())
+  productId String
+  branchId  String
+  quantity  Int
+  type      InventoryMovementType
+  reference String?
+  notes     String?
+  userId    String?
+  createdAt DateTime               @default(now())
+  product   InventoryProduct       @relation(fields: [productId], references: [id])
+  branch    Branch                 @relation(fields: [branchId], references: [id])
+  user      User?                  @relation(fields: [userId], references: [id])
+}
+
+model LabourService {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  hours       Float    @default(1)
+  hourlyRate  Decimal  @db.Numeric(12, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  workOrders  WorkOrderLabour[]
+}
+
+model WorkOrder {
+  id            String          @id @default(cuid())
+  code          String          @unique
+  status        WorkOrderStatus @default(RECEIVED)
+  customerId    String
+  vehicleId     String
+  branchId      String
+  createdById   String
+  assignedToId  String?
+  description   String?
+  mileage       Int?
+  fuelLevel     Int?
+  approvedAt    DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  customer      CustomerProfile @relation(fields: [customerId], references: [id])
+  vehicle       Vehicle         @relation(fields: [vehicleId], references: [id])
+  branch        Branch          @relation(fields: [branchId], references: [id])
+  createdBy     User            @relation("UserWorkOrders", fields: [createdById], references: [id])
+  assignedTo    User?           @relation("AssignedTechnicians", fields: [assignedToId], references: [id])
+  parts         WorkOrderPart[]
+  labours       WorkOrderLabour[]
+  approvals     WorkOrderApproval[]
+  invoices      Invoice[]
+}
+
+model WorkOrderPart {
+  id          String           @id @default(cuid())
+  workOrderId String
+  productId   String
+  quantity    Int              @default(1)
+  price       Decimal          @db.Numeric(12, 2)
+  createdAt   DateTime         @default(now())
+  workOrder   WorkOrder        @relation(fields: [workOrderId], references: [id])
+  product     InventoryProduct @relation(fields: [productId], references: [id])
+}
+
+model WorkOrderLabour {
+  id          String        @id @default(cuid())
+  workOrderId String
+  serviceId   String
+  hours       Float          @default(1)
+  rate        Decimal        @db.Numeric(12, 2)
+  createdAt   DateTime       @default(now())
+  workOrder   WorkOrder      @relation(fields: [workOrderId], references: [id])
+  service     LabourService  @relation(fields: [serviceId], references: [id])
+}
+
+model WorkOrderApproval {
+  id          String   @id @default(cuid())
+  workOrderId String
+  approved    Boolean
+  notes       String?
+  approvedAt  DateTime @default(now())
+  approvedBy  String?
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])
+}
+
+model Invoice {
+  id          String          @id @default(cuid())
+  number      String          @unique
+  type        InvoiceType
+  issueDate   DateTime        @default(now())
+  branchId    String
+  customerId  String
+  workOrderId String?
+  subtotal    Decimal         @db.Numeric(12, 2)
+  tax         Decimal         @db.Numeric(12, 2)
+  total       Decimal         @db.Numeric(12, 2)
+  cai         String
+  dueDate     DateTime?
+  status      String          @default("OPEN")
+  notes       String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  branch      Branch          @relation(fields: [branchId], references: [id])
+  customer    CustomerProfile @relation(fields: [customerId], references: [id])
+  workOrder   WorkOrder?      @relation(fields: [workOrderId], references: [id])
+  lines       InvoiceLine[]
+  payments    Payment[]
+}
+
+model InvoiceLine {
+  id          String           @id @default(cuid())
+  invoiceId   String
+  productId   String?
+  serviceId   String?
+  description String
+  quantity    Int              @default(1)
+  unitPrice   Decimal          @db.Numeric(12, 2)
+  taxRate     Decimal          @db.Numeric(5, 2)
+  total       Decimal          @db.Numeric(12, 2)
+  invoice     Invoice          @relation(fields: [invoiceId], references: [id])
+  product     InventoryProduct? @relation(fields: [productId], references: [id])
+  service     LabourService?   @relation(fields: [serviceId], references: [id])
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  invoiceId String
+  amount    Decimal  @db.Numeric(12, 2)
+  method    String
+  paidAt    DateTime @default(now())
+  notes     String?
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+}
+
+model PurchaseOrder {
+  id         String         @id @default(cuid())
+  number     String         @unique
+  supplierId String
+  branchId   String
+  status     String         @default("DRAFT")
+  total      Decimal        @db.Numeric(12, 2)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  supplier   Supplier       @relation(fields: [supplierId], references: [id])
+  branch     Branch         @relation(fields: [branchId], references: [id])
+  lines      PurchaseLine[]
+  receipts   PurchaseReceipt[]
+}
+
+model PurchaseLine {
+  id         String           @id @default(cuid())
+  purchaseId String
+  productId  String
+  quantity   Int
+  unitCost   Decimal          @db.Numeric(12, 2)
+  product    InventoryProduct @relation(fields: [productId], references: [id])
+  purchase   PurchaseOrder    @relation(fields: [purchaseId], references: [id])
+}
+
+model PurchaseReceipt {
+  id           String   @id @default(cuid())
+  purchaseId   String
+  receivedAt   DateTime @default(now())
+  receivedById String?
+  notes        String?
+  purchase     PurchaseOrder @relation(fields: [purchaseId], references: [id])
+}
+
+model AccountingAccount {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  type      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  entries   AccountingEntry[]
+}
+
+model AccountingEntry {
+  id         String                @id @default(cuid())
+  accountId  String
+  invoiceId  String?
+  purchaseId String?
+  amount     Decimal               @db.Numeric(12, 2)
+  type       AccountingEntryType
+  description String?
+  date       DateTime              @default(now())
+  account    AccountingAccount     @relation(fields: [accountId], references: [id])
+  invoice    Invoice?              @relation(fields: [invoiceId], references: [id])
+  purchase   PurchaseOrder?        @relation(fields: [purchaseId], references: [id])
+}
+
+model Notification {
+  id           String            @id @default(cuid())
+  title        String
+  message      String
+  channel      CampaignChannel
+  scheduledFor DateTime?
+  sentAt       DateTime?
+  userId       String?
+  campaignId   String?
+  createdAt    DateTime          @default(now())
+  user         User?             @relation(fields: [userId], references: [id])
+  campaign     MarketingCampaign? @relation(fields: [campaignId], references: [id])
+}
+
+model MarketingCampaign {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  channel      CampaignChannel
+  scheduledFor DateTime?
+  createdAt    DateTime @default(now())
+  notifications Notification[]
+}
+
+model SignageMedia {
+  id          String   @id @default(cuid())
+  filename    String
+  title       String
+  description String?
+  duration    Int?
+  createdAt   DateTime @default(now())
+  playlists   SignagePlaylistItem[]
+}
+
+model SignagePlaylist {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items     SignagePlaylistItem[]
+}
+
+model SignagePlaylistItem {
+  id         String        @id @default(cuid())
+  playlistId String
+  mediaId    String
+  position   Int
+  playlist   SignagePlaylist @relation(fields: [playlistId], references: [id])
+  media      SignageMedia    @relation(fields: [mediaId], references: [id])
+}
+
+model ReportSnapshot {
+  id        String   @id @default(cuid())
+  name      String
+  payload   Json
+  createdAt DateTime @default(now())
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  module    String
+  payload   Json?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}
