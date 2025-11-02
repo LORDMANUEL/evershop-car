@@ -7,22 +7,29 @@ Este repositorio alberga una plataforma integral para la gestión de talleres au
 ## Tabla de contenidos
 
 1. [Visión general](#visión-general)
-2. [Estado actual del proyecto](#estado-actual-del-proyecto)
-3. [Roadmap por fases](#roadmap-por-fases)
-4. [Estructura del repositorio](#estructura-del-repositorio)
-5. [Requisitos](#requisitos)
-6. [Instalación rápida en Ubuntu](#instalación-rápida-en-ubuntu)
-7. [Variables de entorno](#variables-de-entorno)
-8. [Ejecución en desarrollo](#ejecución-en-desarrollo)
-9. [Pruebas](#pruebas)
-10. [Despliegue](#despliegue)
-11. [Documentación complementaria](#documentación-complementaria)
+2. [Vista previa del dashboard](#vista-previa-del-dashboard)
+3. [Estado actual del proyecto](#estado-actual-del-proyecto)
+4. [Roadmap por fases](#roadmap-por-fases)
+5. [Estructura del repositorio](#estructura-del-repositorio)
+6. [Requisitos](#requisitos)
+7. [Instalación rápida en Ubuntu](#instalación-rápida-en-ubuntu)
+8. [Variables de entorno](#variables-de-entorno)
+9. [Ejecución en desarrollo](#ejecución-en-desarrollo)
+10. [Pruebas](#pruebas)
+11. [Despliegue](#despliegue)
+12. [Documentación complementaria](#documentación-complementaria)
 
 ## Visión general
 
 - **Dominio**: Gestión integral de talleres automotrices con enfoque en inventario, órdenes de trabajo, facturación SAR y experiencia del cliente.
 - **Arquitectura**: API REST en Node.js/Express + Prisma (PostgreSQL) y SPA React/Vite con integración Babylon.js para el Garage 3D.
 - **Objetivo**: Entregar una solución lista para operar, instalable directamente sobre Ubuntu sin contenedores y respaldada por documentación técnica y script de instalación.
+
+## Vista previa del dashboard
+
+> Captura conceptual del panel administrativo que ilustra los indicadores clave y el roadmap activo de la plataforma.
+
+![Panel administrativo con indicadores diarios](docs/assets/dashboard-preview.svg)
 
 ## Estado actual del proyecto
 
@@ -50,6 +57,32 @@ El proyecto cuenta con un prototipo funcional estable que cubre los cimientos te
 | ⏳ | **Fase 4 · Calidad y pruebas** | Robustecer calidad, monitoreo y automatización. | Suite de pruebas amplia, seeds consistentes, cobertura CI, alertas básicas. |
 | ⏳ | **Fase 5 · Experiencia de usuario** | Pulir interacción y contenido orientado al cliente. | UX mejorada, estados de carga, tutoriales in-app, iteración sobre Garage 3D y portal de cliente. |
 | ⏳ | **Fase 6 · Preparación para producción** | Endurecer seguridad y operación 24/7. | Hardening, respaldo/restore, observabilidad, manuales operativos, checklist de lanzamiento. |
+
+### Detalle por fase activa
+
+#### Fase 3 · Profundización funcional
+
+- **Backlog prioritario**: conciliaciones contables automáticas, transferencias multi-sucursal con doble validación, auditoría de inventario con bitácora completa y reglas SAR avanzadas (CAI, series por sucursal y notas de crédito).
+- **Dependencias**: definición de catálogos fiscales definitivos, políticas de autorización por rol para ajustes de inventario y confirmación de flujos multi-sucursal desde operaciones.
+- **Entregables de control**: diagramas BPMN de órdenes de servicio, pruebas de estrés sobre movimientos de inventario y reportes financieros trimestrales.
+
+#### Fase 4 · Calidad y pruebas
+
+- **Backlog prioritario**: ampliar suite Jest (API) y Playwright (frontend) cubriendo flujos críticos, generar seeds deterministas por entorno y configurar cobertura mínima del 80% para módulos core.
+- **Automatización**: pipeline CI con lint + test + build, jobs nocturnos de verificación de seeds y alertas Slack/Email para fallos.
+- **Observabilidad**: instrumentar logs estructurados, métricas básicas (tiempo de respuesta API, errores por módulo) y tablero de salud en el dashboard administrativo.
+
+#### Fase 5 · Experiencia de usuario
+
+- **Backlog prioritario**: refinar estados de carga y vacíos, asistentes in-app para técnicos y cajeros, y mejoras de accesibilidad (WCAG AA) incluyendo traducción/localización.
+- **Garage 3D**: optimizar carga de modelos Babylon.js, soporte para hotspots interactivos y catálogo filtrado por VIN.
+- **Contenido educativo**: biblioteca de tutoriales paso a paso y guías contextualizadas según rol.
+
+#### Fase 6 · Preparación para producción
+
+- **Backlog prioritario**: endurecimiento de seguridad (CSP, rotación de llaves, hardening de servidor), políticas de respaldo/restore verificadas y plan de contingencia multi-región.
+- **Operación 24/7**: monitoreo activo, runbooks para incidentes, escalamiento definido y pruebas de recuperación de desastres.
+- **Documentación final**: checklist de lanzamiento, acuerdos de nivel de servicio (SLA) y manuales operativos para cada área del taller.
 
 ### Próximos pasos inmediatos
 
