@@ -17,7 +17,7 @@ const router = Router();
 
 const invoiceLineSchema = z.object({
   description: z.string(),
-  quantity: z.number().positive(),
+  quantity: z.number().int().positive(),
   unitPrice: z.number().positive(),
   taxRate: z.number().min(0),
   productId: z.string().optional(),
@@ -248,6 +248,11 @@ router.post(
   async (req, res) => {
     try {
       const data = invoiceSchema.parse(req.body);
+      const authReq = req as AuthRequest;
+      if (!authReq.user?.id) {
+        throw new Error('Usuario no identificado');
+      }
+
       const invoice = await prisma.$transaction(async (tx) => {
         const allocation = await allocateDocumentNumber(
           tx,
@@ -255,8 +260,41 @@ router.post(
           FiscalDocumentType.INVOICE,
           data.seriesId
         );
+
         const totals = calculateTotals(data.lines);
-        return tx.invoice.create({
+
+        const productQuantities = new Map<string, number>();
+        for (const line of data.lines) {
+          if (!line.productId) {
+            continue;
+          }
+          productQuantities.set(
+            line.productId,
+            (productQuantities.get(line.productId) ?? 0) + line.quantity
+          );
+        }
+
+        const stocks = new Map<string, { id: string }>();
+        for (const [productId, quantity] of productQuantities) {
+          const stock = await tx.inventoryStock.findUnique({
+            where: {
+              productId_branchId: {
+                productId,
+                branchId: data.branchId
+              }
+            }
+          });
+
+          if (!stock || stock.quantity < quantity) {
+            throw new Error(
+              `Stock insuficiente para el producto ${productId} en la sucursal seleccionada`
+            );
+          }
+
+          stocks.set(productId, stock);
+        }
+
+        const created = await tx.invoice.create({
           data: {
             number: allocation.number,
             type: data.type,
@@ -282,6 +320,32 @@ router.post(
             fiscalSeries: true
           }
         });
+
+        for (const [productId, quantity] of productQuantities) {
+          const stock = stocks.get(productId);
+          if (!stock) {
+            continue;
+          }
+
+          await tx.inventoryStock.update({
+            where: { id: stock.id },
+            data: { quantity: { decrement: quantity } }
+          });
+
+          await tx.inventoryMovement.create({
+            data: {
+              productId,
+              branchId: data.branchId,
+              quantity: -quantity,
+              type: InventoryMovementType.SALE,
+              reference: created.number,
+              notes: `Salida por factura ${created.number}`,
+              userId: authReq.user.id
+            }
+          });
+        }
+
+        return created;
       });
 
       res.status(201).json(invoice);

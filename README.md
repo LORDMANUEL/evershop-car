@@ -214,6 +214,7 @@ npm test
 - Última ejecución en este entorno (2025-11-02): `npm install` en `backend/` falló con `403 Forbidden` por restricciones de red, dejando pendientes las suites Jest/Vitest.
 - Consulte [docs/QA.md](docs/QA.md) para el checklist completo de validaciones de Fase 3 y la planificación de CI/CD rumbo a la Fase 4.
 - Una vez restablecido el acceso a `registry.npmjs.org`, ejecute la matriz descrita en el documento de QA para confirmar transferencias, auditorías, series fiscales y conciliaciones.
+- QA reciente: se corrigió la omisión de descuentos de inventario durante la facturación y se endureció la validación de cantidades en líneas de factura para evitar valores decimales incompatibles con el modelo.
 
 ## Despliegue
 

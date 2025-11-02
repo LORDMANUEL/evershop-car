@@ -47,6 +47,13 @@ Las validaciones se enfocan en los entregables recién incorporados:
 - `npm install` (frontend) → **Pendiente** por la misma limitante.
 - Suites automatizadas → **No ejecutadas** en este contenedor; requieren entorno con conectividad externa.
 
+## Defectos detectados y corregidos (2025-11-02)
+
+| Hallazgo | Riesgo | Corrección aplicada |
+|----------|--------|---------------------|
+| Facturación sin descuento de inventario ni bitácora de movimientos. | Venta de repuestos no reflejaba salidas, afectando conciliaciones y auditoría. | Se valida stock disponible por producto, se descuenta la existencia en la misma transacción y se registra movimiento `SALE` con referencia a la factura. |
+| Cantidades decimales permitidas en líneas de factura. | Incompatibilidad con el esquema (`Int`) y riesgo de saldos incoherentes al calcular inventario. | Se reforzó el esquema Zod para aceptar solo cantidades enteras positivas. |
+
 ## Próximos pasos hacia la Fase 4
 
 - Restablecer conectividad a `registry.npmjs.org` y ejecutar las suites mencionadas.
