@@ -1,4 +1,11 @@
-import { PrismaClient, Role, CampaignChannel, InventoryMovementType, WorkOrderStatus } from '@prisma/client';
+import {
+  PrismaClient,
+  Role,
+  CampaignChannel,
+  InventoryMovementType,
+  WorkOrderStatus,
+  FiscalDocumentType
+} from '@prisma/client';
 import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -16,6 +23,57 @@ async function main() {
       phone: '+504 9999-9999'
     }
   });
+
+  const secondaryBranch = await prisma.branch.upsert({
+    where: { code: 'EAST' },
+    update: {},
+    create: {
+      code: 'EAST',
+      name: 'Sucursal Este',
+      address: 'Boulevard del Este, SPS',
+      phone: '+504 8888-8888'
+    }
+  });
+
+  const seedSeries = async (
+    branchId: string,
+    documentType: FiscalDocumentType,
+    prefix: string,
+    cai: string
+  ) => {
+    await prisma.fiscalSeries.upsert({
+      where: {
+        branchId_documentType_prefix: {
+          branchId,
+          documentType,
+          prefix
+        }
+      },
+      update: {
+        cai,
+        expiresAt: new Date('2025-12-31T23:59:59Z'),
+        isActive: true
+      },
+      create: {
+        branchId,
+        documentType,
+        cai,
+        prefix,
+        startNumber: 1,
+        endNumber: 500,
+        nextNumber: 1,
+        expiresAt: new Date('2025-12-31T23:59:59Z'),
+        isActive: true
+      }
+    });
+  };
+
+  await Promise.all([
+    seedSeries(branch.id, FiscalDocumentType.INVOICE, '001-001-01-', '111111-AAA-2025'),
+    seedSeries(branch.id, FiscalDocumentType.CREDIT_NOTE, 'NC-001-', '111111-BBB-2025'),
+    seedSeries(secondaryBranch.id, FiscalDocumentType.INVOICE, '002-001-01-', '222222-AAA-2025'),
+    seedSeries(secondaryBranch.id, FiscalDocumentType.CREDIT_NOTE, 'NC-002-', '222222-BBB-2025')
+  ]);
 
   const admin = await prisma.user.upsert({
     where: { email: 'admin@taller.com' },
@@ -120,6 +178,28 @@ async function main() {
       type: InventoryMovementType.PURCHASE,
       reference: 'PO-0001',
       notes: 'Stock inicial seed',
+      userId: admin.id
+    }
+  });
+
+  await prisma.inventoryStock.upsert({
+    where: { productId_branchId: { productId: oil.id, branchId: secondaryBranch.id } },
+    update: { quantity: { set: 12 } },
+    create: {
+      productId: oil.id,
+      branchId: secondaryBranch.id,
+      quantity: 12
+    }
+  });
+
+  await prisma.inventoryMovement.create({
+    data: {
+      productId: oil.id,
+      branchId: secondaryBranch.id,
+      quantity: 12,
+      type: InventoryMovementType.TRANSFER_IN,
+      reference: 'TRF-SEED-01',
+      notes: 'Stock inicial sucursal Este',
       userId: admin.id
     }
   });

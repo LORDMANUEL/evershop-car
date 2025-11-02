@@ -12,11 +12,11 @@ Este documento describe la arquitectura general de la plataforma de gestión de 
 
 ## Módulos Principales
 
-1. **Inventario**: Gestión de productos, movimientos, auditorías y stock por sucursal.
+1. **Inventario**: Gestión de productos, movimientos, auditorías programadas, transferencias multi-sucursal y stock por ubicación.
 2. **Mano de Obra**: Catálogo de servicios, tarifas y registro de horas.
 3. **Garage (Portal Cliente)**: Perfil del cliente, visualización 3D, historial y aprobación de presupuestos.
-4. **Facturación (SAR)**: Emisión de facturas con cumplimiento de normativas hondureñas, numeración y PDF.
-5. **Contabilidad**: Compras, cuentas por pagar/cobrar, libros contables básicos.
+4. **Facturación (SAR)**: Emisión de facturas con series CAI por sucursal, notas de crédito y exportación PDF regulada.
+5. **Contabilidad**: Compras, cuentas por pagar/cobrar, conciliaciones automáticas y libros contables básicos.
 6. **Técnico**: Órdenes de servicio, diagnósticos, flujo de aprobación y cierre.
 7. **Reportes & Dashboard**: Gráficos interactivos y reportes exportables.
 8. **Marketing**: Campañas de notificación y recordatorios.
@@ -61,7 +61,7 @@ backend/
 - Cifrado de contraseñas con bcrypt.
 - JWT almacenado en cookies httpOnly o almacenamiento seguro del frontend.
 - Validación de datos con Zod.
-- Auditoría automática en movimientos de inventario y facturación.
+- Auditoría automática en movimientos de inventario, transferencias y facturación.
 - Plantillas SAR configurables desde la base de datos.
 
 ## Despliegue

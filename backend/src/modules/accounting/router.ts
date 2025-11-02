@@ -1,5 +1,10 @@
 import { Router } from 'express';
-import { AccountingEntryType, Role, Prisma } from '@prisma/client';
+import {
+  AccountingEntryType,
+  Prisma,
+  ReconciliationStatus,
+  Role
+} from '@prisma/client';
 import { z } from 'zod';
 
 import prisma from '../../config/prisma';
@@ -35,6 +40,12 @@ const purchaseSchema = z.object({
       unitCost: z.number().positive()
     })
   )
+});
+
+const reconciliationSchema = z.object({
+  from: z.string().datetime(),
+  to: z.string().datetime(),
+  autoClose: z.boolean().default(true)
 });
 
 router.get('/accounts', authenticate, authorize([Role.SUPER_ADMIN, Role.ACCOUNTANT]), async (_req, res) => {
@@ -155,7 +166,7 @@ router.get('/summary', authenticate, authorize([Role.SUPER_ADMIN, Role.ACCOUNTAN
   const fromDate = from ? new Date(String(from)) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   const toDate = to ? new Date(String(to)) : new Date();
 
-  const [sales, purchases, expenses] = await Promise.all([
+  const [sales, purchases, expenses, creditNotes] = await Promise.all([
     prisma.invoice.aggregate({
       _sum: { total: true, tax: true },
       where: { issueDate: { gte: fromDate, lte: toDate } }
@@ -167,16 +178,112 @@ router.get('/summary', authenticate, authorize([Role.SUPER_ADMIN, Role.ACCOUNTAN
     prisma.accountingEntry.aggregate({
       _sum: { amount: true },
       where: { type: AccountingEntryType.DEBIT, description: { contains: 'Gasto' } }
+    }),
+    prisma.creditNote.aggregate({
+      _sum: { total: true },
+      where: { issuedAt: { gte: fromDate, lte: toDate } }
     })
   ]);
 
+  const creditTotal = creditNotes._sum.total ?? 0;
   res.json({
-    sales: sales._sum.total ?? 0,
+    sales: (sales._sum.total ?? 0) - creditTotal,
     tax: sales._sum.tax ?? 0,
     purchases: purchases._sum.total ?? 0,
     expenses: expenses._sum.amount ?? 0,
-    netIncome: (sales._sum.total ?? 0) - (purchases._sum.total ?? 0) - (expenses._sum.amount ?? 0)
+    creditNotes: creditTotal,
+    netIncome:
+      (sales._sum.total ?? 0) -
+      creditTotal -
+      (purchases._sum.total ?? 0) -
+      (expenses._sum.amount ?? 0)
   });
 });
+
+router.get(
+  '/reconciliations',
+  authenticate,
+  authorize([Role.SUPER_ADMIN, Role.ACCOUNTANT]),
+  async (req, res) => {
+    const reconciliations = await prisma.accountingReconciliation.findMany({
+      include: { createdBy: true },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(reconciliations);
+  }
+);
+
+router.post(
+  '/reconciliations/auto',
+  authenticate,
+  authorize([Role.SUPER_ADMIN, Role.ACCOUNTANT]),
+  async (req, res) => {
+    try {
+      const payload = reconciliationSchema.parse(req.body);
+      const authReq = req as AuthRequest;
+      if (!authReq.user?.id) {
+        throw new Error('Usuario no identificado');
+      }
+
+      const fromDate = new Date(payload.from);
+      const toDate = new Date(payload.to);
+
+      const [invoices, creditNotes, payments, entries] = await Promise.all([
+        prisma.invoice.aggregate({
+          _sum: { total: true },
+          where: { issueDate: { gte: fromDate, lte: toDate } }
+        }),
+        prisma.creditNote.aggregate({
+          _sum: { total: true },
+          where: { issuedAt: { gte: fromDate, lte: toDate } }
+        }),
+        prisma.payment.aggregate({
+          _sum: { amount: true },
+          where: { paidAt: { gte: fromDate, lte: toDate } }
+        }),
+        prisma.accountingEntry.groupBy({
+          by: ['type'],
+          where: { date: { gte: fromDate, lte: toDate } },
+          _sum: { amount: true }
+        })
+      ]);
+
+      const invoiceTotal = invoices._sum.total ?? 0;
+      const creditTotal = creditNotes._sum.total ?? 0;
+      const paymentTotal = payments._sum.amount ?? 0;
+      const debitTotal = entries.find((e) => e.type === AccountingEntryType.DEBIT)?._sum.amount ?? 0;
+      const creditEntryTotal = entries.find((e) => e.type === AccountingEntryType.CREDIT)?._sum.amount ?? 0;
+
+      const difference = Number(
+        (invoiceTotal - creditTotal - paymentTotal + (debitTotal - creditEntryTotal)).toFixed(2)
+      );
+
+      const reconciliation = await prisma.accountingReconciliation.create({
+        data: {
+          periodStart: fromDate,
+          periodEnd: toDate,
+          difference,
+          status:
+            difference === 0 && payload.autoClose
+              ? ReconciliationStatus.COMPLETED
+              : ReconciliationStatus.OPEN,
+          details: {
+            invoiceTotal,
+            creditTotal,
+            paymentTotal,
+            debitTotal,
+            creditEntryTotal
+          },
+          createdById: authReq.user.id
+        },
+        include: { createdBy: true }
+      });
+
+      res.status(201).json(reconciliation);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+);
 
 export default router;

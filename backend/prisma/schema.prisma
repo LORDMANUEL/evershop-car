@@ -40,10 +40,29 @@ enum InventoryMovementType {
   RETURN
 }
 
+enum TransferStatus {
+  REQUESTED
+  APPROVED
+  RECEIVED
+  CANCELLED
+}
+
+enum InventoryAuditStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
 enum InvoiceType {
   SERVICE
   PRODUCT
   MIXED
+}
+
+enum FiscalDocumentType {
+  INVOICE
+  CREDIT_NOTE
 }
 
 enum CampaignChannel {
@@ -54,6 +73,11 @@ enum CampaignChannel {
 enum AccountingEntryType {
   DEBIT
   CREDIT
+}
+
+enum ReconciliationStatus {
+  OPEN
+  COMPLETED
 }
 
 model Branch {
@@ -69,6 +93,10 @@ model Branch {
   workOrders  WorkOrder[]
   invoices    Invoice[]
   purchases   PurchaseOrder[]
+  transfersOut InventoryTransfer[] @relation("TransferFrom")
+  transfersIn  InventoryTransfer[] @relation("TransferTo")
+  auditSessions InventoryAuditSession[]
+  fiscalSeries FiscalSeries[]
 }
 
 model User {
@@ -90,6 +118,14 @@ model User {
   workOrders     WorkOrder[]   @relation("UserWorkOrders")
   assignedOrders WorkOrder[]   @relation("AssignedTechnicians")
   notifications  Notification[]
+  requestedTransfers InventoryTransfer[] @relation("RequestedTransfers")
+  approvedTransfers  InventoryTransfer[] @relation("ApprovedTransfers")
+  receivedTransfers  InventoryTransfer[] @relation("ReceivedTransfers")
+  createdAuditSessions InventoryAuditSession[] @relation("AuditCreatedBy")
+  approvedAuditSessions InventoryAuditSession[] @relation("AuditApprovedBy")
+  auditRecords InventoryAuditRecord[]
+  creditNotes CreditNote[]
+  accountingReconciliations AccountingReconciliation[]
 }
 
 model CustomerProfile {
@@ -183,6 +219,75 @@ model InventoryMovement {
   user      User?                  @relation(fields: [userId], references: [id])
 }
 
+model InventoryTransfer {
+  id            String         @id @default(cuid())
+  code          String         @unique
+  fromBranchId  String
+  toBranchId    String
+  status        TransferStatus @default(REQUESTED)
+  requestedById String
+  approvedById  String?
+  receivedById  String?
+  requestedAt   DateTime       @default(now())
+  approvedAt    DateTime?
+  receivedAt    DateTime?
+  notes         String?
+  fromBranch    Branch         @relation("TransferFrom", fields: [fromBranchId], references: [id])
+  toBranch      Branch         @relation("TransferTo", fields: [toBranchId], references: [id])
+  requestedBy   User           @relation("RequestedTransfers", fields: [requestedById], references: [id])
+  approvedBy    User?          @relation("ApprovedTransfers", fields: [approvedById], references: [id])
+  receivedBy    User?          @relation("ReceivedTransfers", fields: [receivedById], references: [id])
+  lines         InventoryTransferLine[]
+  createdAt     DateTime       @default(now())
+}
+
+model InventoryTransferLine {
+  id         String           @id @default(cuid())
+  transferId String
+  productId  String
+  quantity   Int
+  createdAt  DateTime         @default(now())
+  transfer   InventoryTransfer @relation(fields: [transferId], references: [id])
+  product    InventoryProduct  @relation(fields: [productId], references: [id])
+
+  @@unique([transferId, productId])
+}
+
+model InventoryAuditSession {
+  id           String               @id @default(cuid())
+  code         String               @unique
+  branchId     String
+  status       InventoryAuditStatus @default(DRAFT)
+  scheduledAt  DateTime?
+  startedAt    DateTime?
+  completedAt  DateTime?
+  notes        String?
+  createdById  String
+  approvedById String?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  branch       Branch               @relation(fields: [branchId], references: [id])
+  createdBy    User                 @relation("AuditCreatedBy", fields: [createdById], references: [id])
+  approvedBy   User?                @relation("AuditApprovedBy", fields: [approvedById], references: [id])
+  records      InventoryAuditRecord[]
+}
+
+model InventoryAuditRecord {
+  id              String               @id @default(cuid())
+  sessionId       String
+  productId       String
+  systemQuantity  Int
+  countedQuantity Int
+  difference      Int
+  createdById     String
+  createdAt       DateTime             @default(now())
+  session         InventoryAuditSession @relation(fields: [sessionId], references: [id])
+  product         InventoryProduct      @relation(fields: [productId], references: [id])
+  createdBy       User                  @relation(fields: [createdById], references: [id])
+
+  @@unique([sessionId, productId])
+}
+
 model LabourService {
   id          String   @id @default(cuid())
   code        String   @unique
@@ -262,6 +367,7 @@ model Invoice {
   branchId    String
   customerId  String
   workOrderId String?
+  fiscalSeriesId String
   subtotal    Decimal         @db.Numeric(12, 2)
   tax         Decimal         @db.Numeric(12, 2)
   total       Decimal         @db.Numeric(12, 2)
@@ -274,8 +380,10 @@ model Invoice {
   branch      Branch          @relation(fields: [branchId], references: [id])
   customer    CustomerProfile @relation(fields: [customerId], references: [id])
   workOrder   WorkOrder?      @relation(fields: [workOrderId], references: [id])
+  fiscalSeries FiscalSeries   @relation(fields: [fiscalSeriesId], references: [id])
   lines       InvoiceLine[]
   payments    Payment[]
+  creditNotes CreditNote[]
 }
 
 model InvoiceLine {
@@ -301,6 +409,55 @@ model Payment {
   paidAt    DateTime @default(now())
   notes     String?
   invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+}
+
+model CreditNote {
+  id             String      @id @default(cuid())
+  number         String      @unique
+  invoiceId      String
+  fiscalSeriesId String
+  cai            String
+  reason         String
+  subtotal       Decimal     @db.Numeric(12, 2)
+  tax            Decimal     @db.Numeric(12, 2)
+  total          Decimal     @db.Numeric(12, 2)
+  issuedAt       DateTime    @default(now())
+  createdById    String
+  invoice        Invoice     @relation(fields: [invoiceId], references: [id])
+  fiscalSeries   FiscalSeries @relation(fields: [fiscalSeriesId], references: [id])
+  createdBy      User        @relation(fields: [createdById], references: [id])
+  lines          CreditNoteLine[]
+}
+
+model CreditNoteLine {
+  id           String     @id @default(cuid())
+  creditNoteId String
+  description  String
+  quantity     Int        @default(1)
+  unitPrice    Decimal    @db.Numeric(12, 2)
+  taxRate      Decimal    @db.Numeric(5, 2)
+  total        Decimal    @db.Numeric(12, 2)
+  creditNote   CreditNote @relation(fields: [creditNoteId], references: [id])
+}
+
+model FiscalSeries {
+  id            String             @id @default(cuid())
+  branchId      String
+  documentType  FiscalDocumentType
+  cai           String
+  prefix        String
+  startNumber   Int
+  endNumber     Int
+  nextNumber    Int
+  expiresAt     DateTime
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  branch        Branch            @relation(fields: [branchId], references: [id])
+  invoices      Invoice[]
+  creditNotes   CreditNote[]
+
+  @@unique([branchId, documentType, prefix])
 }
 
 model PurchaseOrder {
@@ -359,6 +516,18 @@ model AccountingEntry {
   account    AccountingAccount     @relation(fields: [accountId], references: [id])
   invoice    Invoice?              @relation(fields: [invoiceId], references: [id])
   purchase   PurchaseOrder?        @relation(fields: [purchaseId], references: [id])
+}
+
+model AccountingReconciliation {
+  id           String               @id @default(cuid())
+  periodStart  DateTime
+  periodEnd    DateTime
+  status       ReconciliationStatus @default(OPEN)
+  difference   Decimal              @db.Numeric(14, 2)
+  details      Json?
+  createdById  String
+  createdAt    DateTime             @default(now())
+  createdBy    User                 @relation(fields: [createdById], references: [id])
 }
 
 model Notification {

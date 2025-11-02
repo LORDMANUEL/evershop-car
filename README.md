@@ -60,7 +60,7 @@ El proyecto cuenta con un prototipo funcional estable que cubre los cimientos te
 | ✅ | **Fase 0 · Planificación** | Definir alcance, blueprint técnico, stack y lineamientos de cumplimiento SAR. | Documento blueprint, definición de módulos, decisiones de arquitectura. |
 | ✅ | **Fase 1 · Fundaciones** | Configurar repositorio, tooling y bases de datos. | Estructura monorepo, Prisma schema inicial, scripts de instalación, pipelines de lint/test locales. |
 | ✅ | **Fase 2 · Prototipo funcional** | Habilitar flujos end-to-end mínimos para validación temprana. | API base por módulo, vistas principales en SPA, Garage 3D preliminar, autenticación básica. |
-| ⏳ | **Fase 3 · Profundización funcional** | Completar reglas de negocio, multi-sucursal, auditoría y conciliaciones. | Validaciones completas, workflows de órdenes, manejo fiscal avanzado, reportes financieros detallados. |
+| ✅ | **Fase 3 · Profundización funcional** | Completar reglas de negocio, multi-sucursal, auditoría y conciliaciones. | Validaciones completas, workflows de órdenes, manejo fiscal avanzado, reportes financieros detallados. |
 | ⏳ | **Fase 4 · Calidad y pruebas** | Robustecer calidad, monitoreo y automatización. | Suite de pruebas amplia, seeds consistentes, cobertura CI, alertas básicas. |
 | ⏳ | **Fase 5 · Experiencia de usuario** | Pulir interacción y contenido orientado al cliente. | UX mejorada, estados de carga, tutoriales in-app, iteración sobre Garage 3D y portal de cliente. |
 | ⏳ | **Fase 6 · Preparación para producción** | Endurecer seguridad y operación 24/7. | Hardening, respaldo/restore, observabilidad, manuales operativos, checklist de lanzamiento. |
@@ -69,24 +69,24 @@ El proyecto cuenta con un prototipo funcional estable que cubre los cimientos te
 
 #### Fase 3 · Profundización funcional
 
-**Backlog prioritario**
+**Entregables completados**
 
-- Conciliaciones contables automáticas que cuadren inventario, facturación y contabilidad con asientos generados por transacción.
-- Transferencias multi-sucursal con doble validación (origen/destino) y control de autorizaciones.
-- Auditoría de inventario con bitácora completa de movimientos, firmas digitales y bloqueos ante discrepancias.
-- Reglas SAR avanzadas: administración de CAI, series por sucursal, notas de crédito y alertas por vencimiento.
+- Motor de transferencias multi-sucursal con código secuencial, doble aprobación (origen/destino) y trazabilidad en bitácora de auditoría.
+- Auditorías cíclicas de inventario con sesiones, conteos controlados, ajustes automáticos y movimientos de corrección documentados.
+- Gestión fiscal SAR por sucursal: series CAI activables/inactivables, asignación automática de folios y emisión de notas de crédito con reintegro al inventario.
+- Conciliaciones contables automáticas por periodo con captura de ventas, notas de crédito, pagos y asientos para revisión financiera.
 
-**Dependencias clave**
+**Impacto operativo**
 
-- Definición final de catálogos fiscales (impuestos, exoneraciones, tipos de documento) provistos por contabilidad.
-- Políticas de autorización por rol para ajustes de inventario y aprobación de transferencias.
-- Confirmación operativa de flujos multi-sucursal y tiempos de tránsito entre bodegas.
+- Seeds multi-sucursal y series fiscales listas para entornos demo, habilitando escenarios de QA sobre traspasos y devoluciones.
+- API ampliada con endpoints de transferencias, auditorías, series fiscales, facturación SAR avanzada y conciliaciones para monitoreo continuo.
+- Reportes resumen actualizados para reflejar notas de crédito y diferencias reconciliadas en indicadores financieros.
 
-**Entregables de control**
+**Puente hacia la Fase 4**
 
-- Diagramas BPMN completos de órdenes de servicio y rutas de aprobación.
-- Pruebas de estrés sobre movimientos de inventario (picos de 500 transacciones/minuto).
-- Reportes financieros trimestrales con conciliación automática y anexos SAR.
+- Priorizar suites de pruebas sobre flujos críticos recién fortalecidos (transferencias, auditorías, notas de crédito).
+- Instrumentar métricas sobre tiempos de aprobación y diferencias de inventario para alimentar tableros de observabilidad.
+- Documentar playbooks operativos aprovechando los nuevos controles antes de activar CI/CD integral.
 
 #### Fase 4 · Calidad y pruebas
 

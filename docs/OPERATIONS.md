@@ -11,6 +11,8 @@
 - Registro y actualización de repuestos.
 - Movimientos de entradas y salidas con auditoría.
 - Alertas de stock bajo.
+- Transferencias entre sucursales con doble aprobación y bitácora automática.
+- Auditorías programadas con conteo físico, ajustes automáticos y reportes históricos.
 
 ### Mano de obra
 - Catálogo de servicios con tarifas.
@@ -22,12 +24,14 @@
 - Historial de servicios.
 
 ### Facturación SAR
-- Emisión de facturas con numeración autorizada.
-- Exportación a PDF con formato preimpreso.
+- Emisión de facturas con numeración autorizada por serie y control de CAI por sucursal.
+- Generación de notas de crédito con reintegro automático de inventario.
+- Exportación a PDF con formato preimpreso y datos de vigencia.
 
 ### Contabilidad
 - Registro de compras, cuentas y asientos contables.
-- Reporte financiero básico.
+- Conciliaciones automáticas por periodo con detalle de ventas, notas de crédito y pagos.
+- Reporte financiero básico actualizado con devoluciones y diferencias reconciliadas.
 
 ### Técnico
 - Gestión completa del flujo de órdenes de servicio.
@@ -58,4 +62,4 @@ npm run build
 
 ## Semillas de datos
 
-El comando `npm run seed` en `backend` carga usuarios y datos de ejemplo.
+El comando `npm run seed` en `backend` carga usuarios y datos de ejemplo, incluyendo dos sucursales, series fiscales CAI y existencias en ambas bodegas.
