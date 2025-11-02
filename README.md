@@ -17,8 +17,9 @@ Este repositorio alberga una plataforma integral para la gestión de talleres au
 9. [Variables de entorno](#variables-de-entorno)
 10. [Ejecución en desarrollo](#ejecución-en-desarrollo)
 11. [Pruebas](#pruebas)
-12. [Despliegue](#despliegue)
-13. [Documentación complementaria](#documentación-complementaria)
+12. [Seguimiento de QA](#seguimiento-de-qa)
+13. [Despliegue](#despliegue)
+14. [Documentación complementaria](#documentación-complementaria)
 
 ## Visión general
 
@@ -208,6 +209,12 @@ cd backend
 npm test
 ```
 
+## Seguimiento de QA
+
+- Última ejecución en este entorno (2025-11-02): `npm install` en `backend/` falló con `403 Forbidden` por restricciones de red, dejando pendientes las suites Jest/Vitest.
+- Consulte [docs/QA.md](docs/QA.md) para el checklist completo de validaciones de Fase 3 y la planificación de CI/CD rumbo a la Fase 4.
+- Una vez restablecido el acceso a `registry.npmjs.org`, ejecute la matriz descrita en el documento de QA para confirmar transferencias, auditorías, series fiscales y conciliaciones.
+
 ## Despliegue
 
 El script `install.sh` también puede utilizarse como guía para el despliegue manual en servidores Ubuntu. Se recomienda configurar Nginx como reverse proxy y habilitar HTTPS.
@@ -218,4 +225,5 @@ Para mayor detalle revisar la documentación en `docs/`.
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): Detalle de módulos, diagramas de flujo y decisiones arquitectónicas.
 - [docs/OPERATIONS.md](docs/OPERATIONS.md): Guía de operaciones, soporte y mantenimiento.
+- [docs/QA.md](docs/QA.md): Checklist de pruebas ejecutadas, pendientes y plan de transición a la Fase 4.
 - Scripts adicionales en `scripts/` para tareas recurrentes (semillas, respaldos, etc.).
