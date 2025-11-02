@@ -178,6 +178,25 @@ El proyecto cuenta con un prototipo funcional estable que cubre los cimientos te
 
 El instalador crea la base de datos, instala dependencias, ejecuta migraciones y compila el frontend.
 
+### Solución de problemas: `npm install` con error 403
+
+Si durante la ejecución aparece `npm ERR! code E403` (habitualmente al descargar `@prisma/client`), siga estas recomendaciones:
+
+- Compruebe conectividad hacia `https://registry.npmjs.org`.
+- Si su organización usa un registro privado, ejecute el instalador definiendo `NPM_REGISTRY`:
+
+  ```bash
+  NPM_REGISTRY=https://registry.npmjs.org ./scripts/install.sh
+  ```
+
+- En entornos con autenticación obligatoria, configure previamente su token:
+
+  ```bash
+  npm config set //registry.npmjs.org/:_authToken "<token>"
+  ```
+
+- Tras ajustar la configuración, vuelva a lanzar `./scripts/install.sh` o ejecute `npm install` manualmente dentro de `backend/` y `frontend/` con la bandera `--registry` apropiada.
+
 ## Variables de entorno
 
 Copiar `.env.example` a `.env` en la carpeta `backend` y `frontend` y ajustar según el entorno.

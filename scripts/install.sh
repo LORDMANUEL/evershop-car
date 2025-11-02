@@ -26,13 +26,42 @@ cd "$BACKEND_DIR"
 cp -n .env.example .env || true
 sed -i "s|postgresql://talleruser:password@localhost:5432/tallerdb|postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME|" .env
 
-npm install
+npm_install() {
+  local component="$1"
+  local registry="${NPM_REGISTRY:-}"
+  local registry_args=()
+
+  if [ -n "$registry" ]; then
+    registry_args+=("--registry" "$registry")
+  fi
+
+  if ! npm install "${registry_args[@]}"; then
+    cat <<EOF >&2
+[ERROR] No fue posible instalar dependencias para "${component}".
+Si el error corresponde a un código HTTP 403, revise:
+  • Que cuente con acceso a https://registry.npmjs.org.
+  • Si su organización usa un registro privado, defina la variable
+    de entorno NPM_REGISTRY con la URL correspondiente.
+  • En casos con autenticación obligatoria, configure su token ejecutando
+    "npm config set //<host>/:_authToken <token>" antes de relanzar.
+
+Ejemplo:
+  NPM_REGISTRY=https://registry.npmjs.org ./scripts/install.sh
+
+También puede ejecutar manualmente:
+  (cd "${component}" && npm install --registry "${registry:-https://registry.npmjs.org}")
+EOF
+    exit 1
+  fi
+}
+
+npm_install "backend"
 npx prisma generate
 npx prisma db push
 npm run seed || true
 
 cd "$FRONTEND_DIR"
-npm install
+npm_install "frontend"
 npm run build
 
 echo "Instalación completada. Ejecute 'cd backend && npm run dev' para iniciar la API y 'cd frontend && npm run dev' para la SPA."

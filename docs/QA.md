@@ -47,6 +47,12 @@ Las validaciones se enfocan en los entregables recién incorporados:
 - `npm install` (frontend) → **Pendiente** por la misma limitante.
 - Suites automatizadas → **No ejecutadas** en este contenedor; requieren entorno con conectividad externa.
 
+## Incidencias abiertas y mitigaciones
+
+| ID | Descripción | Estado | Mitigación |
+|----|-------------|--------|------------|
+| QA-403 | `npm install` devuelve `403 Forbidden` al descargar paquetes (ej. `@prisma/client`). | Bloqueante en entorno sin acceso público. | Se actualizó `scripts/install.sh` para aceptar `NPM_REGISTRY` y se documentó en el README cómo apuntar a un registro accesible o autenticar con token antes de ejecutar el instalador. |
+
 ## Defectos detectados y corregidos (2025-11-02)
 
 | Hallazgo | Riesgo | Corrección aplicada |
